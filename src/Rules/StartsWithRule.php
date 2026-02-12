@@ -1,0 +1,30 @@
+<?php
+
+namespace MB\Validation\Rules;
+
+use MB\Support\Str;
+use MB\Validation\Contracts\ValidationRule;
+
+class StartsWithRule implements ValidationRule
+{
+    public static function alias(): string|array
+    {
+        return 'starts_with';
+    }
+
+    public function validate(string $attribute, mixed $value, ?array $parameters, \Closure $fail): void
+    {
+        if (empty($parameters)) {
+            throw new \InvalidArgumentException('Validation rule starts_with requires at least 1 parameter.');
+        }
+
+        if (!Str::startsWith((string) $value, $parameters)) {
+            $fail($attribute, self::message());
+        }
+    }
+
+    public static function message(): string
+    {
+        return 'The :attribute must start with one of the following: :values';
+    }
+}
