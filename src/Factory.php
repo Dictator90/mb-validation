@@ -14,7 +14,7 @@ class Factory implements Contracts\FactoryInterface
      *
      * @var MessagesInterface
      */
-    protected $translator;
+    protected $message;
 
     /**
      * The Presence Verifier implementation.
@@ -79,16 +79,20 @@ class Factory implements Contracts\FactoryInterface
      */
     protected $resolver;
 
+    public static function create(?MessagesInterface $message = null, ?ContainerInterface $container = null, $lang = 'ru')
+    {
+        return new static($message ?? DefaultMessages::create($lang), $container);
+    }
     /**
      * Create a new Validator factory instance.
      *
-     * @param  MessagesInterface  $translator
+     * @param  MessagesInterface|null  $message
      * @param  ContainerInterface|null  $container
      */
-    public function __construct(MessagesInterface $translator, ?ContainerInterface $container = null)
+    public function __construct(?MessagesInterface $message = null, ?ContainerInterface $container = null)
     {
         $this->container = $container;
-        $this->translator = $translator;
+        $this->message = $message ?? DefaultMessages::create();
     }
 
     /**
@@ -155,10 +159,10 @@ class Factory implements Contracts\FactoryInterface
     protected function resolve(array $data, array $rules, array $messages, array $attributes)
     {
         if (is_null($this->resolver)) {
-            return new Validator($this->translator, $data, $rules, $messages, $attributes);
+            return new Validator($this->message, $data, $rules, $messages, $attributes);
         }
 
-        return call_user_func($this->resolver, $this->translator, $data, $rules, $messages, $attributes);
+        return call_user_func($this->resolver, $this->message, $data, $rules, $messages, $attributes);
     }
 
     /**
@@ -284,7 +288,7 @@ class Factory implements Contracts\FactoryInterface
      */
     public function getTranslator(): MessagesInterface
     {
-        return $this->translator;
+        return $this->message;
     }
 
     /**

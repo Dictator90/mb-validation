@@ -58,11 +58,14 @@ class ClosureValidationRule implements RuleContract, ValidatorAwareRule
     public function passes($attribute, $value): bool
     {
         $this->failed = false;
+        $this->messages = [];
 
         ($this->callback)($attribute, $value, function ($attribute, $message = null) {
             $this->failed = true;
 
-            return $this->pendingPotentiallyMessagesString($attribute, $message);
+            $this->messages[] = $this->pendingPotentiallyMessagesString($attribute, $message);
+
+            return $this->messages[\count($this->messages) - 1];
         }, $this->validator);
 
         return ! $this->failed;

@@ -20,12 +20,7 @@ class RequiredRule implements ValidationRule
             || is_string($value) && trim($value) === ''
             || is_countable($value) && count($value) < 1
         ) {
-            $fail($attribute, $this->message());
+            $fail($attribute);
         }
-    }
-
-    public static function message(): string
-    {
-        return "The :attribute is required.";
     }
 }

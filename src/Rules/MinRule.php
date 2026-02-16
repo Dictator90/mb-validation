@@ -24,7 +24,7 @@ class MinRule implements ValidationRule
         }
 
         if ($value instanceof UploadedFile && !$value->isValid()) {
-            $fail($attribute, self::message());
+            $fail($attribute);
             return;
         }
 
@@ -33,15 +33,10 @@ class MinRule implements ValidationRule
             $min = $this->trimValue($parameters[0]);
 
             if (!BigNumber::of($size)->isGreaterThanOrEqualTo($min)) {
-                $fail($attribute, self::message());
+                $fail($attribute);
             }
         } catch (MathException) {
-            $fail($attribute, self::message());
+            $fail($attribute);
         }
-    }
-
-    public static function message(): string
-    {
-        return 'The :attribute must be at least :min.';
     }
 }

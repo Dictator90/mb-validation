@@ -106,7 +106,17 @@ class MessageBag implements JsonSerializable, MessageBagInterface, MessageProvid
             $messages = $messages->getMessageBag()->getMessages();
         }
 
-        $this->messages = array_merge_recursive($this->messages, $messages);
+        foreach ($messages as $key => $value) {
+            if (! isset($this->messages[$key])) {
+                $this->messages[$key] = (array) $value;
+            } else {
+                foreach ((array) $value as $message) {
+                    if (! in_array($message, $this->messages[$key], true)) {
+                        $this->messages[$key][] = $message;
+                    }
+                }
+            }
+        }
 
         return $this;
     }
@@ -433,7 +443,7 @@ class MessageBag implements JsonSerializable, MessageBagInterface, MessageProvid
     /**
      * Convert the object to pretty print formatted JSON.
      *
-     * @params int $options
+     * @param int $options
      *
      * @return string
      */

@@ -24,7 +24,7 @@ class MaxRule implements ValidationRule
         }
 
         if ($value instanceof UploadedFile && !$value->isValid()) {
-            $fail($attribute, self::message());
+            $fail($attribute);
             return;
         }
 
@@ -33,15 +33,10 @@ class MaxRule implements ValidationRule
             $max = $this->trimValue($parameters[0]);
 
             if (!BigNumber::of($size)->isLessThanOrEqualTo($max)) {
-                $fail($attribute, self::message());
+                $fail($attribute);
             }
         } catch (MathException) {
-            $fail($attribute, self::message());
+            $fail($attribute);
         }
-    }
-
-    public static function message(): string
-    {
-        return 'The :attribute must not be greater than :max.';
     }
 }

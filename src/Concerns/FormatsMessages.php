@@ -64,13 +64,18 @@ trait FormatsMessages
         // messages out of the translator service for this validation rule.
         $key = "validation.{$lowerRule}";
 
-        if ($key !== ($value = $this->translator->get($key))) {
+        if ($key !== ($value = $this->getTranslator()->get($key))) {
             return $value;
         }
 
-        return $this->getFromLocalArray(
+        $fromFallback = $this->getFromLocalArray(
             $attribute, $lowerRule, $this->fallbackMessages
-        ) ?: $key;
+        );
+        if ($fromFallback) {
+            return $fromFallback;
+        }
+
+        return $key;
     }
 
     /**
@@ -154,7 +159,7 @@ trait FormatsMessages
     protected function getCustomMessageFromTranslator($keys)
     {
         foreach (Arr::wrap($keys) as $key) {
-            if (($message = $this->translator->get($key)) !== $key) {
+            if (($message = $this->getTranslator()->get($key)) !== $key) {
                 return $message;
             }
 
@@ -166,7 +171,7 @@ trait FormatsMessages
             );
 
             $message = $this->getWildcardCustomMessages(Arr::dot(
-                (array) $this->translator->get('validation.custom')
+                (array) $this->getTranslator()->get('validation.custom')
             ), $shortKey, $key);
 
             if ($message !== $key) {
@@ -214,7 +219,17 @@ trait FormatsMessages
 
         $key = "validation.{$lowerRule}.{$type}";
 
-        return $this->translator->get($key);
+        $value = $this->getTranslator()->get($key);
+        if ($value !== $key) {
+            return $value;
+        }
+
+        $fromFallback = $this->getFromLocalArray($attribute, $lowerRule, $this->fallbackMessages);
+        if ($fromFallback) {
+            return $fromFallback;
+        }
+
+        return $key;
     }
 
     /**
@@ -311,7 +326,7 @@ trait FormatsMessages
      */
     protected function getAttributeFromTranslations($name)
     {
-        if (!is_array($attributes = $this->translator->get('validation.attributes'))) {
+        if (!is_array($attributes = $this->getTranslator()->get('validation.attributes'))) {
             return null;
         }
 
@@ -501,7 +516,7 @@ trait FormatsMessages
 
         $key = "validation.values.{$attribute}.{$value}";
 
-        if (($line = $this->translator->get($key)) !== $key) {
+        if (($line = $this->getTranslator()->get($key)) !== $key) {
             return $line;
         }
 
@@ -572,6 +587,6 @@ trait FormatsMessages
     {
         [$class, $method] = Str::parseCallback($callback, 'replace');
 
-        return $this->container->make($class)->{$method}(...array_slice(func_get_args(), 1));
+        return $this->container->get($class)->{$method}(...array_slice(func_get_args(), 1));
     }
 }

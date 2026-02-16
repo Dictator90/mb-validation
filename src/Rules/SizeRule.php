@@ -27,15 +27,10 @@ class SizeRule implements ValidationRule
             $expected = $this->trimValue($parameters[0]);
 
             if (!BigNumber::of($size)->isEqualTo($expected)) {
-                $fail($attribute, self::message());
+                $fail($attribute);
             }
         } catch (MathException) {
-            $fail($attribute, self::message());
+            $fail($attribute);
         }
-    }
-
-    public static function message(): string
-    {
-        return 'The :attribute must be :size.';
     }
 }

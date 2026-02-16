@@ -6,7 +6,6 @@ use BadMethodCallException;
 use MB\Messages\Contracts\MessagesInterface;
 use MB\Support\Arr;
 use MB\Support\Collection;
-use MB\Support\Fluent;
 use MB\Support\Str;
 use MB\Validation\Concerns\ValidatesAttributes;
 use MB\Validation\Contracts\ReplacerRule;
@@ -82,7 +81,7 @@ class Validator implements ValidatorInterface
      *
      * @var MessagesInterface
      */
-    protected $translator;
+    protected $message;
 
     /**
      * The container instance.
@@ -323,11 +322,11 @@ class Validator implements ValidatorInterface
     protected $excludeRules = ['exclude', 'exclude_if', 'exclude_unless', 'exclude_with', 'exclude_without'];
 
     /**
-     * The size related validation rules.
+     * The size related validation rules (by alias).
      *
      * @var string[]
      */
-    protected $sizeRules = ['size', 'between', 'Min', 'Max', 'Gt', 'Lt', 'Gte', 'Lte'];
+    protected $sizeRules = ['size', 'between', 'min', 'max', 'gt', 'lt', 'gte', 'lte'];
 
     /**
      * The numeric related validation rules.
@@ -367,14 +366,14 @@ class Validator implements ValidatorInterface
     /**
      * Create a new Validator instance.
      *
-     * @param  MessagesInterface  $translator
+     * @param  MessagesInterface  $message
      * @param  array  $data
      * @param  array  $rules
      * @param  array  $messages
      * @param  array  $attributes
      */
     public function __construct(
-        MessagesInterface $translator,
+        MessagesInterface $message,
         array $data,
         array $rules,
         array $messages = [],
@@ -385,7 +384,7 @@ class Validator implements ValidatorInterface
         }
 
         $this->initialRules = $rules;
-        $this->translator = $translator;
+        $this->message = $message;
         $this->customMessages = $messages;
         $this->data = $this->parseData($data);
         $this->customAttributes = $attributes;
@@ -692,12 +691,35 @@ class Validator implements ValidatorInterface
         $value = $this->getValue($attribute);
 
         $validatable = $this->isValidatable($rule, $attribute, $value);
-        if (!$this->registryClass::has($rule)) {
+
+        // Object-based rules (including ClosureValidationRule and other RuleContract implementations)
+        if (is_object($rule) && $rule instanceof Contracts\Rule) {
+            if (! $validatable) {
+                return;
+            }
+
+            if ($rule instanceof Contracts\ValidatorAwareRule) {
+                $rule->setValidator($this);
+            }
+
+            if (! $rule->passes($attribute, $value)) {
+                $messages = $rule->message();
+
+                foreach ((array) $messages as $message) {
+                    $this->messages->add($attribute, (string) $message);
+                }
+
+                $this->failedRules[$attribute][\get_class($rule)] = $parameters;
+            }
+
+            return;
+        }
+
+        if (!is_string($rule) || !$this->registryClass::has($rule)) {
             return;
         }
 
         $ruleInstance = $this->registryClass::get($rule);
-        $this->setFallbackMessages([$attribute => $ruleInstance::message()]);
         if ($ruleInstance instanceof ReplacerRule) {
             $this->addReplacer($rule, fn () => $ruleInstance::replace(...func_get_args()));
         }
@@ -806,7 +828,7 @@ class Validator implements ValidatorInterface
         return $this->presentOrRuleIsImplicit($rule, $attribute, $value) &&
                $this->passesOptionalCheck($attribute) &&
                $this->isNotNullIfMarkedAsNullable($rule, $attribute) &&
-               $this->hasNotFailedPreviousRuleIfPresenceRule($rule, $attribute);
+               (!is_string($rule) || $this->hasNotFailedPreviousRuleIfPresenceRule($rule, $attribute));
     }
 
     /**
@@ -1244,53 +1266,6 @@ class Validator implements ValidatorInterface
     }
 
     /**
-     * Add conditions to a given field based on a Closure.
-     *
-     * @param  string|array  $attribute
-     * @param  string|array  $rules
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function sometimes($attribute, $rules, callable $callback): static
-    {
-        $payload = new Fluent($this->data);
-
-        foreach ((array) $attribute as $key) {
-            $response = (new ValidationRuleParser($this->data))->explode([$key => $rules]);
-
-            $this->implicitAttributes = array_merge($response->implicitAttributes, $this->implicitAttributes);
-
-            foreach ($response->rules as $ruleKey => $ruleValue) {
-                if ($callback($payload, $this->dataForSometimesIteration($ruleKey, ! str_ends_with($key, '.*')))) {
-                    $this->addRules([static::encodeAttributeWithPlaceholder($ruleKey) => $ruleValue]);
-                }
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get the data that should be injected into the iteration of a wildcard "sometimes" callback.
-     *
-     * @param  string  $attribute
-     * @param  bool  $removeLastSegmentOfAttribute
-     * @return \MB\Support\Fluent|mixed
-     */
-    private function dataForSometimesIteration(string $attribute, bool $removeLastSegmentOfAttribute): mixed
-    {
-        $lastSegmentOfAttribute = strrchr($attribute, '.');
-
-        $attribute = $lastSegmentOfAttribute && $removeLastSegmentOfAttribute
-            ? Str::replaceLast($lastSegmentOfAttribute, '', $attribute)
-            : $attribute;
-
-        return is_array($data = data_get($this->data, $attribute))
-            ? new Fluent($data)
-            : $data;
-    }
-
-    /**
      * Instruct the validator to stop validating after the first rule failure.
      *
      * @param bool $stopOnFirstFailure
@@ -1597,18 +1572,18 @@ class Validator implements ValidatorInterface
      */
     public function getTranslator(): MessagesInterface
     {
-        return $this->translator;
+        return $this->message;
     }
 
     /**
      * Set the messages / translation implementation.
      *
-     * @param  MessagesInterface  $translator
+     * @param  MessagesInterface  $message
      * @return void
      */
-    public function setTranslator(MessagesInterface $translator): void
+    public function setTranslator(MessagesInterface $message): void
     {
-        $this->translator = $translator;
+        $this->message = $message;
     }
 
     /**

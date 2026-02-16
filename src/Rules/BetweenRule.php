@@ -31,15 +31,10 @@ class BetweenRule implements ValidationRule
                 && BigNumber::of($size)->isLessThanOrEqualTo($max);
 
             if (!$passes) {
-                $fail($attribute, self::message());
+                $fail($attribute);
             }
         } catch (MathException) {
-            $fail($attribute, self::message());
+            $fail($attribute);
         }
-    }
-
-    public static function message(): string
-    {
-        return 'The :attribute must be between :min and :max.';
     }
 }

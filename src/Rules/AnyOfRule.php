@@ -32,17 +32,7 @@ class AnyOfRule implements ValidationRule
         }
 
         if (!$passes) {
-            $fail($attribute, $this->message());
+            $fail($attribute);
         }
-    }
-
-    /**
-     * Get the validation error messages.
-     *
-     * @return string
-     */
-    public static function message(): string
-    {
-        return 'The :attribute must be one of :values.';
     }
 }

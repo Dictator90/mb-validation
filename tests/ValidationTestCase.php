@@ -2,8 +2,6 @@
 
 namespace MB\Validation\Tests;
 
-use MB\Messages\ArrayMessages;
-use MB\Messages\Contracts\MessagesInterface;
 use MB\Validation\Factory;
 use MB\Validation\Validator;
 use PHPUnit\Framework\TestCase;
@@ -12,14 +10,10 @@ abstract class ValidationTestCase extends TestCase
 {
     protected Factory $factory;
 
-    protected MessagesInterface $translator;
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->translator = new ArrayMessages([], 'en');
-        $this->translator->addMessages('en', 'validation', []);
-        $this->factory = new Factory($this->translator);
+        $this->factory = Factory::create();
     }
 
     protected function validate(array $data, array $rules): Validator

@@ -82,11 +82,11 @@ class InvokableValidationRule implements ValidatorAwareRule
     {
         $this->failed = false;
 
-        if ($this->invokable instanceof DataAwareRule) {
+        if ($this->invokable instanceof DataAwareRule && $this->validator) {
             $this->invokable->setData($this->validator->getData());
         }
 
-        if ($this->invokable instanceof ValidatorAwareRule) {
+        if ($this->invokable instanceof ValidatorAwareRule && $this->validator) {
             $this->invokable->setValidator($this->validator);
         }
 
@@ -103,7 +103,7 @@ class InvokableValidationRule implements ValidatorAwareRule
             }
         );
 
-        if ($this->messages) {
+        if ($this->messages && $this->validator) {
             $this->validator->setCustomMessages($this->messages);
         }
 

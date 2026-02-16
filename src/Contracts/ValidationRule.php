@@ -8,8 +8,6 @@ interface ValidationRule
 {
     public static function alias(): string|array;
 
-    public static function message(): string;
-
     /**
      * Run the validation rule.
      *

@@ -21,7 +21,7 @@ interface ValidatorInterface
 
     public function getTranslator(): MessagesInterface;
 
-    public function setTranslator(MessagesInterface $translator): void;
+    public function setTranslator(MessagesInterface $message): void;
 
     /**
      * @param  array|null  $keys

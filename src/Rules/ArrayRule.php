@@ -14,11 +14,6 @@ class ArrayRule implements ValidationRule, ReplacerRule
         return 'array';
     }
 
-    public static function message(): string
-    {
-        return 'field must be array';
-    }
-
     public static function replace($message, $attribute, $rule, $parameters, ValidatorInterface $validator): ?string
     {
         return $validator->replaceAcceptedIf($message, $attribute, $rule, $parameters);
@@ -30,7 +25,7 @@ class ArrayRule implements ValidationRule, ReplacerRule
             $fail($attribute);
         } elseif (!empty($parameters)) {
             if (!empty(array_diff_key($value, array_fill_keys($parameters, '')))) {
-                $fail($attribute, $this::message());
+                $fail($attribute);
             }
         }
     }
