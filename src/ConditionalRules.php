@@ -16,14 +16,14 @@ class ConditionalRules
     /**
      * The rules to be added to the attribute.
      *
-     * @var \Illuminate\Contracts\Validation\ValidationRule|\Illuminate\Contracts\Validation\InvokableRule|\Illuminate\Contracts\Validation\Rule|\Closure|array|string
+     * @var \MB\Validation\Contracts\ValidationRule|\MB\Validation\Contracts\InvokableRule|\MB\Validation\Contracts\Rule|\Closure|array|string
      */
     protected $rules;
 
     /**
      * The rules to be added to the attribute if the condition fails.
      *
-     * @var \Illuminate\Contracts\Validation\ValidationRule|\Illuminate\Contracts\Validation\InvokableRule|\Illuminate\Contracts\Validation\Rule|\Closure|array|string
+     * @var \MB\Validation\Contracts\ValidationRule|\MB\Validation\Contracts\InvokableRule|\MB\Validation\Contracts\Rule|\Closure|array|string
      */
     protected $defaultRules;
 
@@ -31,8 +31,8 @@ class ConditionalRules
      * Create a new conditional rules instance.
      *
      * @param  callable|bool  $condition
-     * @param  \Illuminate\Contracts\Validation\ValidationRule|\Illuminate\Contracts\Validation\InvokableRule|\Illuminate\Contracts\Validation\Rule|\Closure|array|string  $rules
-     * @param  \Illuminate\Contracts\Validation\ValidationRule|\Illuminate\Contracts\Validation\InvokableRule|\Illuminate\Contracts\Validation\Rule|\Closure|array|string  $defaultRules
+     * @param  \MB\Validation\Contracts\ValidationRule|\MB\Validation\Contracts\InvokableRule|\MB\Validation\Contracts\Rule|\Closure|array|string  $rules
+     * @param  \MB\Validation\Contracts\ValidationRule|\MB\Validation\Contracts\InvokableRule|\MB\Validation\Contracts\Rule|\Closure|array|string  $defaultRules
      */
     public function __construct($condition, $rules, $defaultRules = [])
     {

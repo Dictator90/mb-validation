@@ -2,7 +2,7 @@
 
 namespace MB\Validation\Rules;
 
-use Illuminate\Contracts\Validation\DataAwareRule;
+use MB\Validation\Contracts\DataAwareRule;
 use MB\Support\Arr;
 use MB\Validation\Contracts\ValidationRule;
 use MB\Validation\Rules\Concerns\ParseDependentParameters;

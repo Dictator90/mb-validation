@@ -3,13 +3,13 @@
 namespace MB\Validation;
 
 use Closure;
-use Illuminate\Contracts\Validation\CompilableRules;
-use Illuminate\Contracts\Validation\InvokableRule;
-use Illuminate\Contracts\Validation\Rule as RuleContract;
-use Illuminate\Contracts\Validation\ValidationRule;
 use MB\Support\Arr;
 use MB\Support\Collection;
 use MB\Support\Str;
+use MB\Validation\Contracts\CompilableRules;
+use MB\Validation\Contracts\InvokableRule;
+use MB\Validation\Contracts\Rule as RuleContract;
+use MB\Validation\Contracts\ValidationRule;
 use MB\Validation\Rules\DateRule;
 use MB\Validation\Rules\Exists;
 use MB\Validation\Rules\Numeric;

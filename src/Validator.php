@@ -3,20 +3,16 @@
 namespace MB\Validation;
 
 use BadMethodCallException;
-use Illuminate\Contracts\Container\Container;
-use Illuminate\Contracts\Translation\Translator;
-use Illuminate\Contracts\Validation\DataAwareRule;
-use Illuminate\Contracts\Validation\ImplicitRule;
-use Illuminate\Contracts\Validation\Validator as ValidatorContract;
-use Illuminate\Contracts\Validation\ValidatorAwareRule;
+use MB\Messages\Contracts\MessagesInterface;
 use MB\Support\Arr;
 use MB\Support\Collection;
-use Illuminate\Support\Fluent;
+use MB\Support\Fluent;
+use MB\Support\Str;
 use MB\Validation\Concerns\ValidatesAttributes;
 use MB\Validation\Contracts\ReplacerRule;
+use MB\Validation\Contracts\ValidatorInterface;
 use MB\Validation\Message\MessageBag;
-use MB\Support\Str;
-use Illuminate\Support\ValidatedInput;
+use MB\Validation\ValidatedInput;
 use InvalidArgumentException;
 use MB\Validation\Registry\RuleRegistry;
 use MB\Validation\Rules\AcceptedRule;
@@ -76,15 +72,15 @@ use Psr\Container\ContainerInterface;
 use RuntimeException;
 use stdClass;
 
-class Validator implements ValidatorContract
+class Validator implements ValidatorInterface
 {
     use Concerns\FormatsMessages,
         ValidatesAttributes;
 
     /**
-     * The Translator implementation.
+     * The messages / translation implementation.
      *
-     * @var \Illuminate\Contracts\Translation\Translator
+     * @var MessagesInterface
      */
     protected $translator;
 
@@ -371,14 +367,14 @@ class Validator implements ValidatorContract
     /**
      * Create a new Validator instance.
      *
-     * @param  \Illuminate\Contracts\Translation\Translator  $translator
+     * @param  MessagesInterface  $translator
      * @param  array  $data
      * @param  array  $rules
      * @param  array  $messages
      * @param  array  $attributes
      */
     public function __construct(
-        Translator $translator,
+        MessagesInterface $translator,
         array $data,
         array $rules,
         array $messages = [],
@@ -498,7 +494,7 @@ class Validator implements ValidatorContract
      *
      * @return bool
      */
-    public function passes()
+    public function passes(): bool
     {
         $this->messages = new MessageBag;
 
@@ -620,7 +616,7 @@ class Validator implements ValidatorContract
      * Get a validated input container for the validated input.
      *
      * @param  array|null  $keys
-     * @return \MB\Support\ValidatedInput|array
+     * @return ValidatedInput|array
      */
     public function safe(?array $keys = null)
     {
@@ -642,7 +638,9 @@ class Validator implements ValidatorContract
             $this->passes();
         }
 
-        throw_if($this->messages->isNotEmpty(), $this->exception, $this);
+        if ($this->messages->isNotEmpty()) {
+            throw new $this->exception($this);
+        }
 
         $results = [];
 
@@ -837,7 +835,7 @@ class Validator implements ValidatorContract
      */
     protected function isImplicit($rule)
     {
-        return $rule instanceof ImplicitRule ||
+        return $rule instanceof Contracts\ImplicitRule ||
                in_array($rule, $this->implicitRules);
     }
 
@@ -1593,22 +1591,22 @@ class Validator implements ValidatorContract
     }
 
     /**
-     * Get the Translator implementation.
+     * Get the messages / translation implementation.
      *
-     * @return \Illuminate\Contracts\Translation\Translator
+     * @return MessagesInterface
      */
-    public function getTranslator()
+    public function getTranslator(): MessagesInterface
     {
         return $this->translator;
     }
 
     /**
-     * Set the Translator implementation.
+     * Set the messages / translation implementation.
      *
-     * @param  \Illuminate\Contracts\Translation\Translator  $translator
+     * @param  MessagesInterface  $translator
      * @return void
      */
-    public function setTranslator(Translator $translator)
+    public function setTranslator(MessagesInterface $translator): void
     {
         $this->translator = $translator;
     }
@@ -1616,10 +1614,10 @@ class Validator implements ValidatorContract
     /**
      * Set the IoC container instance.
      *
-     * @param  \Illuminate\Contracts\Container\Container  $container
+     * @param  ContainerInterface  $container
      * @return void
      */
-    public function setContainer(Container $container)
+    public function setContainer(ContainerInterface $container): void
     {
         $this->container = $container;
     }
@@ -1655,7 +1653,11 @@ class Validator implements ValidatorContract
     {
         [$class, $method] = Str::parseCallback($callback, 'validate');
 
-        return $this->container->make($class)->{$method}(...array_values($parameters));
+        if ($this->container === null) {
+            throw new RuntimeException('A container is required for class-based validator extensions.');
+        }
+
+        return $this->container->get($class)->{$method}(...array_values($parameters));
     }
 
     protected function registerBaseRules()

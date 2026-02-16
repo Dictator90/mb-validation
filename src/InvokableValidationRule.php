@@ -2,14 +2,14 @@
 
 namespace MB\Validation;
 
+use MB\Messages\Traits\CreatesPotentiallyMessagesStrings;
+use MB\Validation\Contracts\DataAwareRule;
 use MB\Validation\Contracts\ValidationRule;
-use Illuminate\Contracts\Validation\DataAwareRule;
-use Illuminate\Contracts\Validation\ValidatorAwareRule;
-use Illuminate\Translation\CreatesPotentiallyTranslatedStrings;
+use MB\Validation\Contracts\ValidatorAwareRule;
 
 class InvokableValidationRule implements ValidatorAwareRule
 {
-    use CreatesPotentiallyTranslatedStrings;
+    use CreatesPotentiallyMessagesStrings;
 
     /**
      * The invokable that validates the attribute.

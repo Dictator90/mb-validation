@@ -1,9 +1,8 @@
 <?php
-namespace MB\Validation\Contracts;
 
-use Illuminate\Contracts\Validation\Validator;
+namespace MB\Validation\Contracts;
 
 interface ReplacerRule
 {
-    public static function replace($message, $attribute, $rule, $parameters, Validator $validator): string|null;
+    public static function replace($message, $attribute, $rule, $parameters, ValidatorInterface $validator): ?string;
 }

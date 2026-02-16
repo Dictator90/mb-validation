@@ -2,8 +2,6 @@
 
 namespace MB\Validation\Tests;
 
-use Illuminate\Translation\ArrayLoader;
-use Illuminate\Translation\Translator;
 use MB\Validation\Factory;
 use MB\Validation\Validator;
 

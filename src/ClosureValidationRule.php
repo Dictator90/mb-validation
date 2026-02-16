@@ -2,20 +2,20 @@
 
 namespace MB\Validation;
 
-use Illuminate\Contracts\Validation\Rule as RuleContract;
-use Illuminate\Contracts\Validation\ValidatorAwareRule;
-use Illuminate\Translation\CreatesPotentiallyTranslatedStrings;
+use MB\Messages\Traits\CreatesPotentiallyMessagesStrings;
+use MB\Validation\Contracts\Rule as RuleContract;
+use MB\Validation\Contracts\ValidatorAwareRule;
 
 class ClosureValidationRule implements RuleContract, ValidatorAwareRule
 {
-    use CreatesPotentiallyTranslatedStrings;
+    use CreatesPotentiallyMessagesStrings;
 
     /**
      * The callback that validates the attribute.
      *
      * @var \Closure
      */
-    public $callback;
+    public \Closure $callback;
 
     /**
      * Indicates if the validation callback failed.
@@ -55,14 +55,14 @@ class ClosureValidationRule implements RuleContract, ValidatorAwareRule
      * @param  mixed  $value
      * @return bool
      */
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         $this->failed = false;
 
-        $this->callback->__invoke($attribute, $value, function ($attribute, $message = null) {
+        ($this->callback)($attribute, $value, function ($attribute, $message = null) {
             $this->failed = true;
 
-            return $this->pendingPotentiallyTranslatedString($attribute, $message);
+            return $this->pendingPotentiallyMessagesString($attribute, $message);
         }, $this->validator);
 
         return ! $this->failed;
@@ -73,7 +73,7 @@ class ClosureValidationRule implements RuleContract, ValidatorAwareRule
      *
      * @return array
      */
-    public function message()
+    public function message(): array
     {
         return $this->messages;
     }
@@ -84,7 +84,7 @@ class ClosureValidationRule implements RuleContract, ValidatorAwareRule
      * @param  \MB\Validation\Validator  $validator
      * @return $this
      */
-    public function setValidator($validator)
+    public function setValidator($validator): static
     {
         $this->validator = $validator;
 

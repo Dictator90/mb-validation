@@ -2,17 +2,16 @@
 
 namespace MB\Validation\Message;
 
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Contracts\Support\Jsonable;
-use Illuminate\Contracts\Support\MessageBag as MessageBagContract;
-use Illuminate\Contracts\Support\MessageProvider;
 use JsonSerializable;
 use MB\Support\Arr;
 use MB\Support\Collection;
 use MB\Support\Str;
+use MB\Validation\Contracts\Arrayable;
+use MB\Validation\Contracts\MessageBagInterface;
+use MB\Validation\Contracts\MessageProviderInterface;
 use Stringable;
 
-class MessageBag implements Jsonable, JsonSerializable, MessageBagContract, MessageProvider, Stringable
+class MessageBag implements JsonSerializable, MessageBagInterface, MessageProviderInterface, Stringable
 {
     /**
      * All of the registered messages.
@@ -98,12 +97,12 @@ class MessageBag implements Jsonable, JsonSerializable, MessageBagContract, Mess
     /**
      * Merge a new array of messages into the message bag.
      *
-     * @param  \Illuminate\Contracts\Support\MessageProvider|array<string, array<string>>  $messages
+     * @param  MessageProviderInterface|array<string, array<string>>  $messages
      * @return $this
      */
     public function merge($messages)
     {
-        if ($messages instanceof MessageProvider) {
+        if ($messages instanceof MessageProviderInterface) {
             $messages = $messages->getMessageBag()->getMessages();
         }
 
@@ -312,7 +311,7 @@ class MessageBag implements Jsonable, JsonSerializable, MessageBagContract, Mess
      *
      * @return array<string, array<string>>
      */
-    public function messages()
+    public function messages(): array
     {
         return $this->messages;
     }
@@ -322,7 +321,7 @@ class MessageBag implements Jsonable, JsonSerializable, MessageBagContract, Mess
      *
      * @return array<string, array<string>>
      */
-    public function getMessages()
+    public function getMessages(): array
     {
         return $this->messages();
     }

@@ -11,7 +11,7 @@ class ValidationException extends Exception
     /**
      * The validator instance.
      *
-     * @var \Illuminate\Contracts\Validation\Validator
+     * @var \MB\Validation\Contracts\ValidatorInterface
      */
     public $validator;
 
@@ -46,7 +46,7 @@ class ValidationException extends Exception
     /**
      * Create a new exception instance.
      *
-     * @param  \Illuminate\Contracts\Validation\Validator  $validator
+     * @param  \MB\Validation\Contracts\ValidatorInterface  $validator
      * @param  \Symfony\Component\HttpFoundation\Response|null  $response
      * @param  string  $errorBag
      */
@@ -79,7 +79,7 @@ class ValidationException extends Exception
     /**
      * Create an error message summary from the validation errors.
      *
-     * @param  \Illuminate\Contracts\Validation\Validator  $validator
+     * @param  \MB\Validation\Contracts\ValidatorInterface  $validator
      * @return string
      */
     protected static function summarize($validator)

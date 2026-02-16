@@ -3,17 +3,16 @@
 namespace MB\Validation;
 
 use Closure;
-use Illuminate\Contracts\Container\Container;
-use Illuminate\Contracts\Translation\Translator;
-use Illuminate\Contracts\Validation\Factory as FactoryContract;
+use MB\Messages\Contracts\MessagesInterface;
 use MB\Support\Str;
+use Psr\Container\ContainerInterface;
 
-class Factory implements FactoryContract
+class Factory implements Contracts\FactoryInterface
 {
     /**
-     * The Translator implementation.
+     * The messages / translation implementation.
      *
-     * @var \Illuminate\Contracts\Translation\Translator
+     * @var MessagesInterface
      */
     protected $translator;
 
@@ -27,7 +26,7 @@ class Factory implements FactoryContract
     /**
      * The IoC container instance.
      *
-     * @var \Illuminate\Contracts\Container\Container|null
+     * @var ContainerInterface|null
      */
     protected $container;
 
@@ -83,10 +82,10 @@ class Factory implements FactoryContract
     /**
      * Create a new Validator factory instance.
      *
-     * @param  \Illuminate\Contracts\Translation\Translator  $translator
-     * @param  \Illuminate\Contracts\Container\Container|null  $container
+     * @param  MessagesInterface  $translator
+     * @param  ContainerInterface|null  $container
      */
-    public function __construct(Translator $translator, ?Container $container = null)
+    public function __construct(MessagesInterface $translator, ?ContainerInterface $container = null)
     {
         $this->container = $container;
         $this->translator = $translator;
@@ -101,7 +100,7 @@ class Factory implements FactoryContract
      * @param  array  $attributes
      * @return \MB\Validation\Validator
      */
-    public function make(array $data, array $rules, array $messages = [], array $attributes = [])
+    public function make(array $data, array $rules, array $messages = [], array $attributes = []): Validator
     {
         $validator = $this->resolve(
             $data, $rules, $messages, $attributes
@@ -139,7 +138,7 @@ class Factory implements FactoryContract
      *
      * @throws \MB\Validation\ValidationException
      */
-    public function validate(array $data, array $rules, array $messages = [], array $attributes = [])
+    public function validate(array $data, array $rules, array $messages = [], array $attributes = []): array
     {
         return $this->make($data, $rules, $messages, $attributes)->validate();
     }
@@ -279,11 +278,11 @@ class Factory implements FactoryContract
     }
 
     /**
-     * Get the Translator implementation.
+     * Get the messages / translation implementation.
      *
-     * @return \Illuminate\Contracts\Translation\Translator
+     * @return MessagesInterface
      */
-    public function getTranslator()
+    public function getTranslator(): MessagesInterface
     {
         return $this->translator;
     }
@@ -312,9 +311,9 @@ class Factory implements FactoryContract
     /**
      * Get the container instance used by the validation factory.
      *
-     * @return \Illuminate\Contracts\Container\Container|null
+     * @return ContainerInterface|null
      */
-    public function getContainer()
+    public function getContainer(): ?ContainerInterface
     {
         return $this->container;
     }
@@ -322,10 +321,10 @@ class Factory implements FactoryContract
     /**
      * Set the container instance used by the validation factory.
      *
-     * @param  \Illuminate\Contracts\Container\Container  $container
+     * @param  ContainerInterface|null  $container
      * @return $this
      */
-    public function setContainer(Container $container)
+    public function setContainer(?ContainerInterface $container): static
     {
         $this->container = $container;
 

@@ -3,7 +3,7 @@
 namespace MB\Validation\Rules;
 
 use Brick\Math\BigNumber;
-use Illuminate\Support\Exceptions\MathException;
+use MB\Validation\Exceptions\MathException;
 use MB\Validation\Contracts\ValidationRule;
 use MB\Validation\Rules\Concerns\GetsSize;
 

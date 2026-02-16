@@ -1,20 +1,22 @@
 <?php
+
 namespace MB\Validation\Contracts;
 
-use Illuminate\Translation\PotentiallyTranslatedString;
+use MB\Messages\PotentiallyMessagesString;
 
 interface ValidationRule
 {
     public static function alias(): string|array;
+
     public static function message(): string;
 
     /**
      * Run the validation rule.
      *
-     * @param string $attribute
-     * @param mixed $parameters
-     * @param mixed $value
-     * @param \Closure(string, ?string=): PotentiallyTranslatedString $fail
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array|null  $parameters
+     * @param  \Closure(string, ?string=): PotentiallyMessagesString|string  $fail
      * @return void
      */
     public function validate(string $attribute, mixed $value, array|null $parameters, \Closure $fail): void;

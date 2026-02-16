@@ -2,7 +2,7 @@
 
 namespace MB\Validation;
 
-use Illuminate\Contracts\Validation\CompilableRules;
+use MB\Validation\Contracts\CompilableRules;
 
 class NestedRules implements CompilableRules
 {

@@ -2,7 +2,9 @@
 /phpunit.xml
 /vendor/
 /.idea/
+/.vscode/
 /.phpunit.result.cache
 /.git
 *.rar
 *.zip
+.vscode/settings.json

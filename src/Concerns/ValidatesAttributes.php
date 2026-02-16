@@ -15,12 +15,10 @@ use Egulias\EmailValidator\Validation\MultipleValidationWithAnd;
 use Egulias\EmailValidator\Validation\NoRFCWarningsValidation;
 use Egulias\EmailValidator\Validation\RFCValidation;
 use Exception;
-use Illuminate\Container\Container;
-use Illuminate\Database\Eloquent\Model;
 use MB\Support\Arr;
 use MB\Support\Collection;
-use Illuminate\Support\Exceptions\MathException;
-use Illuminate\Support\Facades\Date;
+use MB\Validation\Contracts\TableNameSource;
+use MB\Validation\Exceptions\MathException;
 use MB\Support\Str;
 use MB\Validation\Rules\Exists;
 use MB\Validation\Rules\Unique;
@@ -337,9 +335,18 @@ trait ValidatesAttributes
     protected function getDateTime($value)
     {
         try {
-            return @Date::parse($value) ?: null;
+            if ($value instanceof DateTimeInterface) {
+                return DateTime::createFromInterface($value);
+            }
+            $date = DateTime::createFromFormat('Y-m-d H:i:s', $value)
+                ?: DateTime::createFromFormat('Y-m-d H:i', $value)
+                ?: DateTime::createFromFormat('Y-m-d', $value);
+            if ($date !== false) {
+                return $date;
+            }
+            return new DateTime($value);
         } catch (Exception) {
-            //
+            return null;
         }
     }
 
@@ -948,13 +955,17 @@ trait ValidatesAttributes
                 $validation === 'spoof' => new SpoofCheckValidation(),
                 $validation === 'filter' => new FilterEmailValidation(),
                 $validation === 'filter_unicode' => FilterEmailValidation::unicode(),
-                is_string($validation) && class_exists($validation) => $this->container->make($validation),
+                is_string($validation) && class_exists($validation) => $this->container !== null
+                    ? $this->container->get($validation)
+                    : new $validation(),
                 default => new RFCValidation(),
             })
             ->values()
             ->all() ?: [new RFCValidation];
 
-        $emailValidator = Container::getInstance()->make(EmailValidator::class);
+        $emailValidator = $this->container !== null
+            ? $this->container->get(EmailValidator::class)
+            : new EmailValidator();
 
         return $emailValidator->isValid($value, new MultipleValidationWithAnd($validations));
     }
@@ -1144,13 +1155,13 @@ trait ValidatesAttributes
     {
         [$connection, $table] = str_contains($table, '.') ? explode('.', $table, 2) : [null, $table];
 
-        if (str_contains($table, '\\') && class_exists($table) && is_a($table, Model::class, true)) {
+        if (str_contains($table, '\\') && class_exists($table) && is_a($table, TableNameSource::class, true)) {
             $model = new $table;
 
             $table = $model->getTable();
             $connection ??= $model->getConnectionName();
 
-            if (str_contains($table, '.') && Str::startsWith($table, $connection)) {
+            if (str_contains($table, '.') && Str::startsWith($table, $connection ?? '')) {
                 $connection = null;
             }
 

@@ -8,11 +8,10 @@ class TestValidation extends TestCase
 {
     public function test_base_validation(): void
     {
-        $arrayLoader = new \Illuminate\Translation\ArrayLoader();
-        $arrayLoader->addMessages('en', 'validation', [
+        $translator = new \MB\Messages\ArrayMessages([], 'en');
+        $translator->addMessages('en', 'validation', [
             'string' => ':attribute must be string'
         ]);
-        $translator = new \Illuminate\Translation\Translator($arrayLoader, 'en');
         $validation = new \MB\Validation\Validator(
             $translator,
             [

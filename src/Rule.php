@@ -2,9 +2,9 @@
 
 namespace MB\Validation;
 
-use Illuminate\Contracts\Support\Arrayable;
 use MB\Support\Arr;
-use Illuminate\Support\Traits\Macroable;
+use MB\Validation\Contracts\Arrayable;
+use MB\Validation\Traits\Macroable;
 use MB\Validation\Rules\AnyOfRule;
 use MB\Validation\Rules\ArrayRule;
 use MB\Validation\Rules\Can;
@@ -43,8 +43,8 @@ class Rule
      * Apply the given rules if the given condition is truthy.
      *
      * @param  callable|bool  $condition
-     * @param  \Illuminate\Contracts\Validation\ValidationRule|\Illuminate\Contracts\Validation\InvokableRule|\Illuminate\Contracts\Validation\Rule|\Closure|array|string  $rules
-     * @param  \Illuminate\Contracts\Validation\ValidationRule|\Illuminate\Contracts\Validation\InvokableRule|\Illuminate\Contracts\Validation\Rule|\Closure|array|string  $defaultRules
+     * @param  \MB\Validation\Contracts\ValidationRule|\MB\Validation\Contracts\InvokableRule|\MB\Validation\Contracts\Rule|\Closure|array|string  $rules
+     * @param  \MB\Validation\Contracts\ValidationRule|\MB\Validation\Contracts\InvokableRule|\MB\Validation\Contracts\Rule|\Closure|array|string  $defaultRules
      * @return \MB\Validation\ConditionalRules
      */
     public static function when($condition, $rules, $defaultRules = [])
@@ -56,8 +56,8 @@ class Rule
      * Apply the given rules if the given condition is falsy.
      *
      * @param  callable|bool  $condition
-     * @param  \Illuminate\Contracts\Validation\ValidationRule|\Illuminate\Contracts\Validation\InvokableRule|\Illuminate\Contracts\Validation\Rule|\Closure|array|string  $rules
-     * @param  \Illuminate\Contracts\Validation\ValidationRule|\Illuminate\Contracts\Validation\InvokableRule|\Illuminate\Contracts\Validation\Rule|\Closure|array|string  $defaultRules
+     * @param  \MB\Validation\Contracts\ValidationRule|\MB\Validation\Contracts\InvokableRule|\MB\Validation\Contracts\Rule|\Closure|array|string  $rules
+     * @param  \MB\Validation\Contracts\ValidationRule|\MB\Validation\Contracts\InvokableRule|\MB\Validation\Contracts\Rule|\Closure|array|string  $defaultRules
      * @return \MB\Validation\ConditionalRules
      */
     public static function unless($condition, $rules, $defaultRules = [])
@@ -114,7 +114,7 @@ class Rule
     /**
      * Get an in rule builder instance.
      *
-     * @param  \Illuminate\Contracts\Support\Arrayable|\BackedEnum|\UnitEnum|array|string  $values
+     * @param  \MB\Validation\Contracts\Arrayable|\BackedEnum|\UnitEnum|array|string  $values
      * @return \MB\Validation\Rules\In
      */
     public static function in($values)
@@ -129,7 +129,7 @@ class Rule
     /**
      * Get a not_in rule builder instance.
      *
-     * @param  \Illuminate\Contracts\Support\Arrayable|\BackedEnum|\UnitEnum|array|string  $values
+     * @param  \MB\Validation\Contracts\Arrayable|\BackedEnum|\UnitEnum|array|string  $values
      * @return \MB\Validation\Rules\NotIn
      */
     public static function notIn($values)
@@ -271,7 +271,7 @@ class Rule
     /**
      * Get a contains rule builder instance.
      *
-     * @param  \Illuminate\Contracts\Support\Arrayable|\BackedEnum|\UnitEnum|array|string  $values
+     * @param  \MB\Validation\Contracts\Arrayable|\BackedEnum|\UnitEnum|array|string  $values
      * @return \MB\Validation\Rules\Contains
      */
     public static function contains($values)
@@ -286,7 +286,7 @@ class Rule
     /**
      * Get a "does not contain" rule builder instance.
      *
-     * @param  \Illuminate\Contracts\Support\Arrayable|\BackedEnum|\UnitEnum|array|string  $values
+     * @param  \MB\Validation\Contracts\Arrayable|\BackedEnum|\UnitEnum|array|string  $values
      * @return \MB\Validation\Rules\DoesntContain
      */
     public static function doesntContain($values)

@@ -4,8 +4,8 @@ namespace MB\Validation\Rules;
 
 use MB\Support\Str;
 use MB\Validation\Contracts\ReplacerRule;
+use MB\Validation\Contracts\ValidatorInterface;
 use MB\Validation\Contracts\ValidationRule;
-use MB\Validation\Validator;
 
 class ArrayRule implements ValidationRule, ReplacerRule
 {
@@ -19,7 +19,7 @@ class ArrayRule implements ValidationRule, ReplacerRule
         return 'field must be array';
     }
 
-    public static function replace($message, $attribute, $rule, $parameters, Validator|\Illuminate\Contracts\Validation\Validator $validator): ?string
+    public static function replace($message, $attribute, $rule, $parameters, ValidatorInterface $validator): ?string
     {
         return $validator->replaceAcceptedIf($message, $attribute, $rule, $parameters);
     }
