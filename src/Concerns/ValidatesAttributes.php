@@ -24,8 +24,6 @@ use MB\Validation\Rules\Exists;
 use MB\Validation\Rules\Unique;
 use MB\Validation\ValidationData;
 use InvalidArgumentException;
-use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ValueError;
 
 trait ValidatesAttributes
@@ -761,7 +759,11 @@ trait ValidatesAttributes
      */
     public function validateDimensions($attribute, $value, $parameters)
     {
-        if ($this->isValidFileInstance($value) && in_array($value->getMimeType(), ['image/svg+xml', 'image/svg'])) {
+        if (
+            $this->isValidFileInstance($value)
+            && $this->fileMethodExists($value, 'getMimeType')
+            && in_array($value->getMimeType(), ['image/svg+xml', 'image/svg'], true)
+        ) {
             return true;
         }
 
@@ -771,7 +773,7 @@ trait ValidatesAttributes
 
         $dimensions = method_exists($value, 'dimensions')
             ? $value->dimensions()
-            : @getimagesize($value->getRealPath());
+            : ($this->fileMethodExists($value, 'getRealPath') ? @getimagesize($value->getRealPath()) : false);
 
         if (! $dimensions) {
             return false;
@@ -986,7 +988,12 @@ trait ValidatesAttributes
             throw new InvalidArgumentException("Validation rule encoding parameter [{$parameters[0]}] is not a valid encoding.");
         }
 
-        return mb_check_encoding($value instanceof File ? $value->getContent() : $value, $parameters[0]);
+        $encodingValue = $value;
+        if (is_object($value) && method_exists($value, 'getContent')) {
+            $encodingValue = $value->getContent();
+        }
+
+        return mb_check_encoding($encodingValue, $parameters[0]);
     }
 
     /**
@@ -1676,7 +1683,7 @@ trait ValidatesAttributes
     {
         $this->requireParameterCount(1, $parameters, 'max');
 
-        if ($value instanceof UploadedFile && ! $value->isValid()) {
+        if ($this->isInvalidUploadedFileLike($value)) {
             return false;
         }
 
@@ -1726,7 +1733,11 @@ trait ValidatesAttributes
             $parameters = array_unique(array_merge($parameters, ['jpg', 'jpeg']));
         }
 
-        return $value->getPath() !== '' && in_array($value->guessExtension(), $parameters);
+        if (! $this->fileMethodExists($value, 'guessExtension')) {
+            return false;
+        }
+
+        return $this->fileHasPath($value) && in_array($value->guessExtension(), $parameters, true);
     }
 
     /**
@@ -1747,9 +1758,18 @@ trait ValidatesAttributes
             return false;
         }
 
-        return $value->getPath() !== '' &&
-                (in_array($value->getMimeType(), $parameters) ||
-                 in_array(explode('/', $value->getMimeType())[0].'/*', $parameters));
+        if (! $this->fileMethodExists($value, 'getMimeType')) {
+            return false;
+        }
+
+        $mimeType = $value->getMimeType();
+        if (!is_string($mimeType) || $mimeType === '') {
+            return false;
+        }
+
+        return $this->fileHasPath($value) &&
+                (in_array($mimeType, $parameters, true) ||
+                 in_array(explode('/', $mimeType)[0].'/*', $parameters, true));
     }
 
     /**
@@ -1769,9 +1789,15 @@ trait ValidatesAttributes
             'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'phar',
         ];
 
-        return ($value instanceof UploadedFile)
-            ? in_array(trim(strtolower($value->getClientOriginalExtension())), $phpExtensions)
-            : in_array(trim(strtolower($value->getExtension())), $phpExtensions);
+        if ($this->fileMethodExists($value, 'getClientOriginalExtension')) {
+            $extension = $value->getClientOriginalExtension();
+        } elseif ($this->fileMethodExists($value, 'getExtension')) {
+            $extension = $value->getExtension();
+        } else {
+            return false;
+        }
+
+        return in_array(trim(strtolower((string) $extension)), $phpExtensions, true);
     }
 
     /**
@@ -2128,8 +2154,8 @@ trait ValidatesAttributes
             return false;
         } elseif (is_countable($value) && count($value) < 1) {
             return false;
-        } elseif ($value instanceof File) {
-            return (string) $value->getPath() !== '';
+        } elseif ($this->isValidFileInstance($value)) {
+            return $this->fileHasPath($value);
         }
 
         return true;
@@ -2781,8 +2807,9 @@ trait ValidatesAttributes
             return (string) $this->ensureExponentWithinAllowedRange($attribute, $this->trim($value));
         } elseif (is_array($value)) {
             return count($value);
-        } elseif ($value instanceof File) {
-            return (string) ($value->getSize() / 1024);
+        } elseif ($this->isValidFileInstance($value)) {
+            $sizeInKb = $this->fileSizeInKb($value);
+            return $sizeInKb ?? '0';
         }
 
         return mb_strlen($value ?? '');
@@ -2796,11 +2823,58 @@ trait ValidatesAttributes
      */
     public function isValidFileInstance($value)
     {
-        if ($value instanceof UploadedFile && ! $value->isValid()) {
+        if (!is_object($value)) {
             return false;
         }
 
-        return $value instanceof File;
+        if ($this->isInvalidUploadedFileLike($value)) {
+            return false;
+        }
+
+        return $this->fileMethodExists($value, 'getSize')
+            && ($this->fileMethodExists($value, 'getPath') || $this->fileMethodExists($value, 'getRealPath'));
+    }
+
+    protected function isInvalidUploadedFileLike($value): bool
+    {
+        if (!is_object($value) || !method_exists($value, 'isValid')) {
+            return false;
+        }
+
+        $isValid = $value->isValid();
+        return is_bool($isValid) && $isValid === false;
+    }
+
+    protected function fileMethodExists(mixed $value, string $method): bool
+    {
+        return is_object($value) && method_exists($value, $method);
+    }
+
+    protected function fileHasPath(mixed $value): bool
+    {
+        if ($this->fileMethodExists($value, 'getPath')) {
+            return (string) $value->getPath() !== '';
+        }
+
+        if ($this->fileMethodExists($value, 'getRealPath')) {
+            return (string) $value->getRealPath() !== '';
+        }
+
+        return false;
+    }
+
+    protected function fileSizeInKb(mixed $value): ?string
+    {
+        if (! $this->fileMethodExists($value, 'getSize')) {
+            return null;
+        }
+
+        $size = $value->getSize();
+        if (!is_numeric($size)) {
+            return null;
+        }
+
+        return (string) (((float) $size) / 1024);
     }
 
     /**

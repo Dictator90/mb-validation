@@ -6,7 +6,6 @@ use Brick\Math\BigNumber;
 use MB\Validation\Exceptions\MathException;
 use MB\Validation\Contracts\ValidationRule;
 use MB\Validation\Rules\Concerns\GetsSize;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class MinRule implements ValidationRule
 {
@@ -23,7 +22,7 @@ class MinRule implements ValidationRule
             throw new \InvalidArgumentException('Validation rule min requires at least 1 parameter.');
         }
 
-        if ($value instanceof UploadedFile && !$value->isValid()) {
+        if ($this->isInvalidFileLikeValue($value)) {
             $fail($attribute);
             return;
         }

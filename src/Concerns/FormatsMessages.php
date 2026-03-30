@@ -6,8 +6,6 @@ use Closure;
 use MB\Support\Arr;
 use MB\Support\Number;
 use MB\Support\Str;
-use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FormatsMessages
 {
@@ -246,8 +244,7 @@ trait FormatsMessages
         return match (true) {
             $this->hasRule($attribute, $this->numericRules) => 'numeric',
             $this->hasRule($attribute, ['array', 'list']) => 'array',
-            $this->getValue($attribute) instanceof UploadedFile,
-            $this->getValue($attribute) instanceof File => 'file',
+            $this->isValidFileInstance($this->getValue($attribute)) => 'file',
             default => 'string',
         };
     }
