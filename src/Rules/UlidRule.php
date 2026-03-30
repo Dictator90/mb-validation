@@ -2,7 +2,6 @@
 
 namespace MB\Validation\Rules;
 
-use MB\Support\Str;
 use MB\Validation\Contracts\ValidationRule;
 
 class UlidRule implements ValidationRule
@@ -14,7 +13,7 @@ class UlidRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, ?array $parameters, \Closure $fail): void
     {
-        if (!Str::isUlid($value)) {
+        if (!is_string($value) || !preg_match('/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/', $value)) {
             $fail($attribute, self::message());
         }
     }

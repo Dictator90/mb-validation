@@ -12,7 +12,6 @@ use MB\Validation\Contracts\Rule as RuleContract;
 use MB\Validation\Contracts\ValidationRule;
 use MB\Validation\Rules\DateRule;
 use MB\Validation\Rules\Exists;
-use MB\Validation\Rules\Numeric;
 use MB\Validation\Rules\Unique;
 
 class ValidationRuleParser
@@ -94,7 +93,7 @@ class ValidationRuleParser
         }
 
         if (is_object($rule)) {
-            if ($rule instanceof DateRule || $rule instanceof Numeric) {
+            if ($rule instanceof DateRule) {
                 return explode('|', (string) $rule);
             }
 
@@ -104,7 +103,7 @@ class ValidationRuleParser
         $rules = [];
 
         foreach ($rule as $value) {
-            if ($value instanceof DateRule || $value instanceof Numeric) {
+            if ($value instanceof DateRule) {
                 $rules = array_merge($rules, explode('|', (string) $value));
             } else {
                 $rules[] = $this->prepareRule($value, $attribute);

@@ -153,7 +153,7 @@ class ValidatorTest extends ValidationTestCase
 
     public function test_default_message_for_required_rule_with_implicit_messages(): void
     {
-        $factory = new Factory();
+        $factory = Factory::create(lang: 'en');
 
         $validator = $factory->make([], ['field' => 'required']);
 
@@ -167,7 +167,7 @@ class ValidatorTest extends ValidationTestCase
 
     public function test_default_message_for_size_rule_min_string_with_implicit_messages(): void
     {
-        $factory = new Factory();
+        $factory = Factory::create(lang: 'en');
 
         $validator = $factory->make(
             ['name' => 'ab'],
@@ -179,5 +179,47 @@ class ValidatorTest extends ValidationTestCase
         $this->assertNotEmpty($messages);
         $first = $messages[0];
         $this->assertStringContainsString('5', $first);
+    }
+
+    public function test_unknown_rule_throws_in_strict_mode(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('not registered');
+
+        $this->factory->make(
+            ['name' => 'John'],
+            ['name' => 'required|unknwon']
+        )->passes();
+    }
+
+    public function test_unknown_rule_can_be_allowed_for_backward_compatibility(): void
+    {
+        $factory = Factory::create()->allowUnknownRules();
+        $validator = $factory->make(
+            ['name' => 'John'],
+            ['name' => 'required|unknwon']
+        );
+
+        $this->assertTrue($validator->passes());
+    }
+
+    public function test_email_rule_fails_for_invalid_address(): void
+    {
+        $validator = $this->factory->make(
+            ['email' => 'broken-email'],
+            ['email' => 'required|email']
+        );
+
+        $this->assertTrue($validator->fails());
+        $this->assertNotEmpty($validator->errors()->get('email'));
+    }
+
+    public function test_validation_exception_with_messages_creates_error_bag(): void
+    {
+        $exception = \MB\Validation\ValidationException::withMessages([
+            'email' => ['Email is required'],
+        ]);
+
+        $this->assertSame(['Email is required'], $exception->errors()['email']);
     }
 }

@@ -53,11 +53,7 @@ class RequiredRulesTest extends ValidationTestCase
 
     public function test_filled_fails_when_present_but_empty(): void
     {
-        $validator = $this->validate(['field' => ''], ['field' => 'filled']);
-        if ($validator->passes()) {
-            $this->markTestSkipped('Filled rule may not run on empty values (implicitRules casing)');
-        }
-        $this->assertTrue($validator->fails());
+        $this->assertFails(['field' => ''], ['field' => 'filled']);
     }
 
     public function test_prohibited_fails_when_field_has_value(): void

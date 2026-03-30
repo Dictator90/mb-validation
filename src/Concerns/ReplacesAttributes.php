@@ -18,6 +18,10 @@ trait ReplacesAttributes
      */
     public function replaceAcceptedIf($message, $attribute, $rule, $parameters)
     {
+        if (!isset($parameters[0], $parameters[1])) {
+            return $message;
+        }
+
         $parameters[1] = $this->getDisplayableValue($parameters[0], Arr::get($this->data, $parameters[0]));
 
         $parameters[0] = $this->getDisplayableAttribute($parameters[0]);

@@ -45,6 +45,8 @@ $messages = new FileMessages(__DIR__.'/vendor/mb4it/validation/lang', 'en');
 $factory  = new Factory($messages);
 ```
 
+`new Factory()` without explicit messages also uses Russian locale (`ru`) by default.
+
 ### Rules
 
 Most Laravel‑style rules are supported, e.g.:
@@ -54,10 +56,14 @@ Most Laravel‑style rules are supported, e.g.:
 - **Size**: `min`, `max`, `between`, `size`, `digits`, `digits_between`
 - **Strings**: `alpha`, `alpha_num`, `alpha_dash`, `contains`, `doesnt_contain`, `starts_with`, `ends_with`, `doesnt_start_with`, `doesnt_end_with`, `uppercase`, `lowercase`, `ascii`
 - **Dates / time**: `date`, `date_format`, `timezone`
-- **Network / IDs**: `ip`, `ipv4`, `ipv6`, `mac_address`, `hex_color`, `url`, `uuid`, `ulid`
+- **Network / IDs**: `email`, `ip`, `ipv4`, `ipv6`, `mac_address`, `hex_color`, `url`, `uuid`, `ulid`
+- **Database**: `exists`, `unique` (requires presence verifier implementation)
 - **Sets / comparison**: `in`, `not_in`, `same`, `different`, `any_of`
 
 Rules can be defined as strings (`'required|string|min:3'`), as rule objects, or as closures (inline rules).
+
+Unknown string rules are strict by default and throw `InvalidArgumentException`.  
+If you need backward-compatible behavior, call `Factory::create()->allowUnknownRules()`.
 
 ### Default messages and locales
 
@@ -127,6 +133,67 @@ The closure receives `$attribute`, `$value`, a `$fail` callback, and the current
 Calling `$fail($attribute, '...')` adds a failure with the given message; omitting the message delegates to the normal translation lookup (`validation.<rule>`).
 
 For more advanced scenarios you can implement `MB\Validation\Contracts\ValidationRule` and register the rule in the rule registry so it can be used by alias in rule strings.
+
+### Trait for object properties
+
+You can validate any object with a reusable trait:
+
+```php
+use MB\Validation\Concerns\ValidatesProperties;
+
+final class ProductDto
+{
+    use ValidatesProperties;
+
+    protected string $validatorLang = 'ru'; // optional, default is 'ru'
+
+    public function __construct(
+        public string $title,
+        private array $items,
+    ) {}
+
+    protected function rules(): array
+    {
+        return [
+            'title' => 'required|string|min:3',
+            'items' => 'required|array|min:1',
+            'items.*.name' => 'required|string',
+        ];
+    }
+}
+
+$dto = new ProductDto('My title', [['name' => 'item-1']]);
+$validated = $dto->validate();
+```
+
+The trait collects initialized public/protected/private properties via reflection, supports wildcard paths like `items.*.name`, and validates through the package `Factory`.
+
+#### Getting errors with trait
+
+`validate()` throws `ValidationException` when validation fails:
+
+```php
+use MB\Validation\ValidationException;
+
+try {
+    $validated = $dto->validate();
+} catch (ValidationException $e) {
+    $errors = $e->errors(); // ['field' => ['message 1', ...]]
+}
+```
+
+If you need non-throwing flow, create a validator manually using the same trait data/rules and check `fails()` / `errors()`:
+
+```php
+$validator = Factory::create(lang: $this->validatorLang)->make(
+    $this->validationData(),
+    $this->rules()
+);
+
+if ($validator->fails()) {
+    $errors = $validator->errors()->toArray();
+}
+```
 
 ### Testing
 

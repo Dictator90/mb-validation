@@ -34,5 +34,12 @@ interface ValidatorInterface
      *
      * @throws \MB\Validation\ValidationException
      */
+    public function validate(): array;
+
+    /**
+     * @return array
+     *
+     * @throws \MB\Validation\ValidationException
+     */
     public function validated();
 }

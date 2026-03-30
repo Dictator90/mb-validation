@@ -73,6 +73,13 @@ class Factory implements Contracts\FactoryInterface
     protected $excludeUnvalidatedArrayKeys = true;
 
     /**
+     * Indicates whether unknown string rules should throw an exception.
+     *
+     * @var bool
+     */
+    protected bool $strictRules = true;
+
+    /**
      * The Validator resolver instance.
      *
      * @var \Closure
@@ -125,6 +132,7 @@ class Factory implements Contracts\FactoryInterface
         }
 
         $validator->excludeUnvalidatedArrayKeys = $this->excludeUnvalidatedArrayKeys;
+        $validator->setStrictRules($this->strictRules);
 
         $this->addExtensions($validator);
 
@@ -268,6 +276,30 @@ class Factory implements Contracts\FactoryInterface
     public function excludeUnvalidatedArrayKeys()
     {
         $this->excludeUnvalidatedArrayKeys = true;
+    }
+
+    /**
+     * Enable strict handling for unknown string rules.
+     *
+     * @return $this
+     */
+    public function strictRules(): static
+    {
+        $this->strictRules = true;
+
+        return $this;
+    }
+
+    /**
+     * Allow unknown string rules (backward compatibility mode).
+     *
+     * @return $this
+     */
+    public function allowUnknownRules(): static
+    {
+        $this->strictRules = false;
+
+        return $this;
     }
 
     /**

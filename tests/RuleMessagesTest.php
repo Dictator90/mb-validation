@@ -25,5 +25,25 @@ class RuleMessagesTest extends ValidationTestCase
 
         $this->assertSame('Длина поля field должна быть не менее 5 символов.', $message);
     }
+
+    public function test_required_message_matches_lang_en(): void
+    {
+        $validator = Factory::create(lang: 'en')->make([], ['field' => 'required']);
+
+        $this->assertTrue($validator->fails());
+        $message = $validator->errors()->first('field');
+
+        $this->assertSame('The field field is required.', $message);
+    }
+
+    public function test_default_factory_constructor_uses_ru_locale(): void
+    {
+        $validator = (new Factory())->make([], ['field' => 'required']);
+
+        $this->assertTrue($validator->fails());
+        $message = $validator->errors()->first('field');
+
+        $this->assertSame('Поле field обязательно для заполнения.', $message);
+    }
 }
 

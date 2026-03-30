@@ -83,9 +83,6 @@ class StringRulesTest extends ValidationTestCase
 
     public function test_ascii_passes(): void
     {
-        if (!method_exists(\MB\Support\Str::class, 'isAscii')) {
-            $this->markTestSkipped('Str::isAscii not available');
-        }
         $this->assertPasses(['field' => 'hello'], ['field' => 'ascii']);
     }
 

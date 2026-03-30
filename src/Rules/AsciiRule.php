@@ -2,7 +2,6 @@
 
 namespace MB\Validation\Rules;
 
-use MB\Support\Str;
 use MB\Validation\Contracts\ValidationRule;
 
 class AsciiRule implements ValidationRule
@@ -14,7 +13,12 @@ class AsciiRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, ?array $parameters, \Closure $fail): void
     {
-        if (!Str::isAscii($value)) {
+        if (!is_scalar($value)) {
+            $fail($attribute, self::message());
+            return;
+        }
+
+        if (!preg_match('/\A[\x00-\x7F]*\z/', (string) $value)) {
             $fail($attribute, self::message());
         }
     }

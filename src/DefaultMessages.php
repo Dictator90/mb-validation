@@ -7,7 +7,7 @@ use MB\Messages\Contracts\MessagesInterface;
 
 final class DefaultMessages
 {
-    public static function create(string $lang = 'en'): MessagesInterface
+    public static function create(string $lang = 'ru'): MessagesInterface
     {
         $messages = new FileMessages(\dirname(__DIR__) . '/lang', $lang);
 

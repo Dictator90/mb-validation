@@ -35,7 +35,9 @@ use MB\Validation\Rules\DigitsRule;
 use MB\Validation\Rules\DoesntContainRule;
 use MB\Validation\Rules\DoesntEndWithRule;
 use MB\Validation\Rules\DoesntStartWithRule;
+use MB\Validation\Rules\EmailRule;
 use MB\Validation\Rules\EndsWithRule;
+use MB\Validation\Rules\Exists;
 use MB\Validation\Rules\FilledRule;
 use MB\Validation\Rules\HexColorRule;
 use MB\Validation\Rules\InRule;
@@ -63,6 +65,7 @@ use MB\Validation\Rules\SizeRule;
 use MB\Validation\Rules\StartsWithRule;
 use MB\Validation\Rules\StringRule;
 use MB\Validation\Rules\TimezoneRule;
+use MB\Validation\Rules\Unique;
 use MB\Validation\Rules\UlidRule;
 use MB\Validation\Rules\UppercaseRule;
 use MB\Validation\Rules\UrlRule;
@@ -242,28 +245,28 @@ class Validator implements ValidatorInterface
     protected $implicitRules = [
         'accepted',
         'accepted_if',
-        'Declined',
-        'DeclinedIf',
-        'Filled',
-        'Missing',
-        'MissingIf',
-        'MissingUnless',
-        'MissingWith',
+        'declined',
+        'declined_if',
+        'filled',
+        'missing',
+        'missing_if',
+        'missing_unless',
+        'missing_with',
         'missing_with_all',
-        'Present',
+        'present',
         'present_if',
         'present_unless',
         'present_with',
         'present_with_all',
         'required',
-        'RequiredIf',
-        'RequiredIfAccepted',
-        'RequiredIfDeclined',
-        'RequiredUnless',
-        'RequiredWith',
-        'RequiredWithAll',
-        'RequiredWithout',
-        'RequiredWithoutAll',
+        'required_if',
+        'required_if_accepted',
+        'required_if_declined',
+        'required_unless',
+        'required_with',
+        'required_with_all',
+        'required_without',
+        'required_without_all',
     ];
 
     /**
@@ -272,46 +275,46 @@ class Validator implements ValidatorInterface
      * @var string[]
      */
     protected $dependentRules = [
-        'After',
-        'AfterOrEqual',
-        'Before',
-        'BeforeOrEqual',
-        'Confirmed',
-        'Different',
-        'ExcludeIf',
-        'ExcludeUnless',
-        'ExcludeWith',
-        'ExcludeWithout',
-        'Gt',
-        'Gte',
-        'Lt',
-        'Lte',
-        'AcceptedIf',
-        'DeclinedIf',
-        'RequiredIf',
-        'RequiredIfAccepted',
-        'RequiredIfDeclined',
-        'RequiredUnless',
-        'RequiredWith',
-        'RequiredWithAll',
-        'RequiredWithout',
-        'RequiredWithoutAll',
-        'PresentIf',
-        'PresentUnless',
-        'PresentWith',
-        'PresentWithAll',
-        'Prohibited',
-        'ProhibitedIf',
-        'ProhibitedIfAccepted',
-        'ProhibitedIfDeclined',
-        'ProhibitedUnless',
-        'Prohibits',
-        'MissingIf',
-        'MissingUnless',
-        'MissingWith',
-        'MissingWithAll',
-        'Same',
-        'Unique',
+        'after',
+        'after_or_equal',
+        'before',
+        'before_or_equal',
+        'confirmed',
+        'different',
+        'exclude_if',
+        'exclude_unless',
+        'exclude_with',
+        'exclude_without',
+        'gt',
+        'gte',
+        'lt',
+        'lte',
+        'accepted_if',
+        'declined_if',
+        'required_if',
+        'required_if_accepted',
+        'required_if_declined',
+        'required_unless',
+        'required_with',
+        'required_with_all',
+        'required_without',
+        'required_without_all',
+        'present_if',
+        'present_unless',
+        'present_with',
+        'present_with_all',
+        'prohibited',
+        'prohibited_if',
+        'prohibited_if_accepted',
+        'prohibited_if_declined',
+        'prohibited_unless',
+        'prohibits',
+        'missing_if',
+        'missing_unless',
+        'missing_with',
+        'missing_with_all',
+        'same',
+        'unique',
     ];
 
     /**
@@ -333,14 +336,14 @@ class Validator implements ValidatorInterface
      *
      * @var string[]
      */
-    protected $numericRules = ['Numeric', 'Integer', 'Decimal'];
+    protected $numericRules = ['numeric', 'integer', 'decimal'];
 
     /**
      * The default numeric related validation rules.
      *
      * @var string[]
      */
-    protected $defaultNumericRules = ['Numeric', 'Integer', 'Decimal'];
+    protected $defaultNumericRules = ['numeric', 'integer', 'decimal'];
 
     /**
      * The current random hash for the validator.
@@ -355,6 +358,13 @@ class Validator implements ValidatorInterface
      * @var class-string<ValidationException>
      */
     protected $exception = ValidationException::class;
+
+    /**
+     * Indicates whether unknown string rules should throw an exception.
+     *
+     * @var bool
+     */
+    protected bool $strictRules = true;
 
     /**
      * The custom callback to determine if an exponent is within allowed range.
@@ -583,7 +593,7 @@ class Validator implements ValidatorInterface
      *
      * @throws ValidationException
      */
-    public function validate()
+    public function validate(): array
     {
         if ($this->fails()) {
             throw new $this->exception($this);
@@ -715,7 +725,23 @@ class Validator implements ValidatorInterface
             return;
         }
 
-        if (!is_string($rule) || !$this->registryClass::has($rule)) {
+        if (!is_string($rule)) {
+            if ($this->strictRules) {
+                throw new InvalidArgumentException(
+                    sprintf('Validation rule for attribute [%s] must resolve to string or object rule.', $attribute)
+                );
+            }
+
+            return;
+        }
+
+        if (!$this->registryClass::has($rule)) {
+            if ($this->strictRules) {
+                throw new InvalidArgumentException(
+                    sprintf('Validation rule [%s] for attribute [%s] is not registered.', $rule, $attribute)
+                );
+            }
+
             return;
         }
 
@@ -1553,6 +1579,19 @@ class Validator implements ValidatorInterface
     }
 
     /**
+     * Enable or disable strict handling for unknown string rules.
+     *
+     * @param  bool  $strictRules
+     * @return $this
+     */
+    public function setStrictRules(bool $strictRules = true): static
+    {
+        $this->strictRules = $strictRules;
+
+        return $this;
+    }
+
+    /**
      * Ensure exponents are within range using the given callback.
      *
      * @param callable(int $scale, string $attribute, mixed $value) $callback
@@ -1664,7 +1703,9 @@ class Validator implements ValidatorInterface
             DoesntContainRule::class,
             DoesntEndWithRule::class,
             DoesntStartWithRule::class,
+            EmailRule::class,
             EndsWithRule::class,
+            Exists::class,
             FilledRule::class,
             HexColorRule::class,
             InRule::class,
@@ -1692,6 +1733,7 @@ class Validator implements ValidatorInterface
             StartsWithRule::class,
             StringRule::class,
             TimezoneRule::class,
+            Unique::class,
             UlidRule::class,
             UppercaseRule::class,
             UrlRule::class,

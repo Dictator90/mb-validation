@@ -16,14 +16,10 @@ class ConditionalRulesTest extends ValidationTestCase
 
     public function test_required_if_fails_when_other_field_matches_and_field_empty(): void
     {
-        $validator = $this->validate(
+        $this->assertFails(
             ['type' => 'admin', 'name' => ''],
             ['name' => 'required_if:type,admin']
         );
-        if ($validator->passes()) {
-            $this->markTestSkipped('required_if may not run on empty values (implicitRules casing)');
-        }
-        $this->assertTrue($validator->fails());
     }
 
     public function test_required_if_passes_when_other_field_matches_and_field_filled(): void
@@ -44,14 +40,10 @@ class ConditionalRulesTest extends ValidationTestCase
 
     public function test_required_unless_fails_when_other_not_in_values_and_field_empty(): void
     {
-        $validator = $this->validate(
+        $this->assertFails(
             ['type' => 'admin', 'name' => ''],
             ['name' => 'required_unless:type,guest,anonymous']
         );
-        if ($validator->passes()) {
-            $this->markTestSkipped('required_unless may not run on empty values (implicitRules casing)');
-        }
-        $this->assertTrue($validator->fails());
     }
 
     public function test_required_unless_passes_when_other_not_in_values_but_field_filled(): void

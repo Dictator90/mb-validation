@@ -18,33 +18,21 @@ class FormatRulesTest extends ValidationTestCase
 
     public function test_uuid_passes(): void
     {
-        if (!method_exists(\MB\Support\Str::class, 'isUuid')) {
-            $this->markTestSkipped('Str::isUuid not available');
-        }
         $this->assertPasses(['field' => '550e8400-e29b-41d4-a716-446655440000'], ['field' => 'uuid']);
     }
 
     public function test_uuid_fails(): void
     {
-        if (!method_exists(\MB\Support\Str::class, 'isUuid')) {
-            $this->markTestSkipped('Str::isUuid not available');
-        }
         $this->assertFails(['field' => 'not-uuid'], ['field' => 'uuid']);
     }
 
     public function test_ulid_passes(): void
     {
-        if (!method_exists(\MB\Support\Str::class, 'isUlid')) {
-            $this->markTestSkipped('Str::isUlid not available');
-        }
         $this->assertPasses(['field' => '01ARZ3NDEKTSV4RRFFQ69G5FAV'], ['field' => 'ulid']);
     }
 
     public function test_ulid_fails(): void
     {
-        if (!method_exists(\MB\Support\Str::class, 'isUlid')) {
-            $this->markTestSkipped('Str::isUlid not available');
-        }
         $this->assertFails(['field' => 'not-ulid'], ['field' => 'ulid']);
     }
 

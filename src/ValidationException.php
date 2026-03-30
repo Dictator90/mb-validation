@@ -4,7 +4,6 @@ namespace MB\Validation;
 
 use Exception;
 use MB\Support\Arr;
-use MB\Support\Facades\Validator as ValidatorFacade;
 
 class ValidationException extends Exception
 {
@@ -18,7 +17,7 @@ class ValidationException extends Exception
     /**
      * The recommended response to send to the client.
      *
-     * @var \Symfony\Component\HttpFoundation\Response|null
+     * @var mixed
      */
     public $response;
 
@@ -47,7 +46,7 @@ class ValidationException extends Exception
      * Create a new exception instance.
      *
      * @param  \MB\Validation\Contracts\ValidatorInterface  $validator
-     * @param  \Symfony\Component\HttpFoundation\Response|null  $response
+     * @param  mixed  $response
      * @param  string  $errorBag
      */
     public function __construct($validator, $response = null, $errorBag = 'default')
@@ -67,13 +66,15 @@ class ValidationException extends Exception
      */
     public static function withMessages(array $messages)
     {
-        return new static(tap(ValidatorFacade::make([], []), function ($validator) use ($messages) {
-            foreach ($messages as $key => $value) {
-                foreach (Arr::wrap($value) as $message) {
-                    $validator->errors()->add($key, $message);
-                }
+        $validator = Factory::create()->make([], []);
+
+        foreach ($messages as $key => $value) {
+            foreach (Arr::wrap($value) as $message) {
+                $validator->errors()->add($key, $message);
             }
-        }));
+        }
+
+        return new static($validator);
     }
 
     /**
@@ -153,7 +154,7 @@ class ValidationException extends Exception
     /**
      * Get the underlying response instance.
      *
-     * @return \Symfony\Component\HttpFoundation\Response|null
+     * @return mixed
      */
     public function getResponse()
     {
