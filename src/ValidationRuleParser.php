@@ -7,12 +7,8 @@ use MB\Support\Arr;
 use MB\Support\Collection;
 use MB\Support\Str;
 use MB\Validation\Contracts\CompilableRules;
-use MB\Validation\Contracts\InvokableRule;
 use MB\Validation\Contracts\Rule as RuleContract;
 use MB\Validation\Contracts\ValidationRule;
-use MB\Validation\Rules\DateRule;
-use MB\Validation\Rules\Exists;
-use MB\Validation\Rules\Unique;
 
 class ValidationRuleParser
 {
@@ -93,21 +89,13 @@ class ValidationRuleParser
         }
 
         if (is_object($rule)) {
-            if ($rule instanceof DateRule) {
-                return explode('|', (string) $rule);
-            }
-
             return Arr::wrap($this->prepareRule($rule, $attribute));
         }
 
         $rules = [];
 
         foreach ($rule as $value) {
-            if ($value instanceof DateRule) {
-                $rules = array_merge($rules, explode('|', (string) $value));
-            } else {
-                $rules[] = $this->prepareRule($value, $attribute);
-            }
+            $rules[] = $this->prepareRule($value, $attribute);
         }
 
         return $rules;
@@ -126,14 +114,12 @@ class ValidationRuleParser
             $rule = new ClosureValidationRule($rule);
         }
 
-        if ($rule instanceof InvokableRule || $rule instanceof ValidationRule) {
+        if ($rule instanceof ValidationRule) {
             $rule = InvokableValidationRule::make($rule);
         }
 
         if (! is_object($rule) ||
-            $rule instanceof RuleContract ||
-            ($rule instanceof Exists && $rule->queryCallbacks()) ||
-            ($rule instanceof Unique && $rule->queryCallbacks())) {
+            $rule instanceof RuleContract) {
             return $rule;
         }
 

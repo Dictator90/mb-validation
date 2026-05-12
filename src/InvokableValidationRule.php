@@ -4,10 +4,11 @@ namespace MB\Validation;
 
 use MB\Messages\Traits\CreatesPotentiallyMessagesStrings;
 use MB\Validation\Contracts\DataAwareRule;
+use MB\Validation\Contracts\Rule as RuleContract;
 use MB\Validation\Contracts\ValidationRule;
 use MB\Validation\Contracts\ValidatorAwareRule;
 
-class InvokableValidationRule implements ValidatorAwareRule
+class InvokableValidationRule implements RuleContract, ValidatorAwareRule
 {
     use CreatesPotentiallyMessagesStrings;
 
@@ -78,12 +79,13 @@ class InvokableValidationRule implements ValidatorAwareRule
      * @param  mixed  $value
      * @return bool
      */
-    public function passes($attribute, $value, array $parameters): bool
+    public function passes($attribute, $value, array $parameters = []): bool
     {
         $this->failed = false;
+        $this->messages = [];
 
-        if ($this->invokable instanceof DataAwareRule && $this->validator) {
-            $this->invokable->setData($this->validator->getData());
+        if ($this->invokable instanceof DataAwareRule) {
+            $this->invokable->setData($this->validator ? $this->validator->getData() : $this->data);
         }
 
         if ($this->invokable instanceof ValidatorAwareRule && $this->validator) {

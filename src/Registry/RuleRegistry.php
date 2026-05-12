@@ -12,10 +12,6 @@ class RuleRegistry implements RuleRegistryInterface
      */
     private static array $rules = [];
 
-    /**
-     * @var array Экземпляры правил [alias => instance]
-     */
-    private static array $instances = [];
 
     /**
     * Register Rule
@@ -67,12 +63,9 @@ class RuleRegistry implements RuleRegistryInterface
             throw new \InvalidArgumentException("Rule '{$alias}' not registered");
         }
 
-        if (!isset(self::$instances[$alias])) {
-            $className = self::$rules[$alias];
-            self::$instances[$alias] = new $className();
-        }
+        $className = self::$rules[$alias];
 
-        return self::$instances[$alias];
+        return new $className();
     }
 
     /**
@@ -89,6 +82,5 @@ class RuleRegistry implements RuleRegistryInterface
     public static function clear(): void
     {
         self::$rules = [];
-        self::$instances = [];
     }
 }
