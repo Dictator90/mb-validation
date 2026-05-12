@@ -86,7 +86,7 @@ class Factory implements Contracts\FactoryInterface
      */
     protected $resolver;
 
-    public static function create(?MessagesInterface $message = null, ?ContainerInterface $container = null, $lang = 'ru')
+    public static function create(?MessagesInterface $message = null, ?ContainerInterface $container = null, string $lang = 'ru'): static
     {
         return new static($message ?? DefaultMessages::create($lang), $container);
     }

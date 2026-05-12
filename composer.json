@@ -19,10 +19,6 @@
     "issues": "https://github.com/mb4it/validation/issues",
     "source": "https://github.com/mb4it/validation"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mb4it/validation.git"
-  },
   "autoload": {
     "psr-4": {
       "MB\\Validation\\": "src/"
@@ -38,8 +34,6 @@
     "mb4it/stringable": "^1",
     "mb4it/collections": "^1",
     "mb4it/messages": "^1.0",
-    "symfony/mime": "^7.2",
-    "symfony/polyfill-php83": "^1.33",
     "psr/container": "^2.0",
     "brick/math": "^0.14.8",
     "egulias/email-validator": "^4.0"
